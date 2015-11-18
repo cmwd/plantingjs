@@ -1,6 +1,6 @@
 import { View } from 'core';
 import MainViewDialog from 'module/main/dialog';
-import Const from 'const';
+import { Event, State } from 'const';
 
 const MainViewMain = View.extend({
   toolbox: null,
@@ -21,15 +21,15 @@ const MainViewMain = View.extend({
       app: this.app,
     });
     this.app
-      .on(Const.Event.VISIBLE_CHANGED, function(visible) {
-        if (this.app.getState() !== Const.State.VIEWER) {
+      .on(Event.VISIBLE_CHANGED, function(visible) {
+        if (this.app.getState() !== State.VIEWER) {
           this.$el.find('.plantingjs-startbtn').toggle(visible);
         }
       }, this)
-      .on(Const.Event.START_PLANTING, function() {
+      .on(Event.START_PLANTING, function() {
         this.$el.find('.plantingjs-startbtn').hide();
       }, this)
-      .on(Const.Event.STATE_CHANGED, function(state) {
+      .on(Event.STATE_CHANGED, function(state) {
         this.$el
           .children().attr('data-state', state);
       }, this);
@@ -40,7 +40,7 @@ const MainViewMain = View.extend({
   },
 
   startPlanting: function() {
-    this.app.trigger(Const.Event.START_PLANTING);
+    this.app.trigger(Event.START_PLANTING);
   },
 });
 

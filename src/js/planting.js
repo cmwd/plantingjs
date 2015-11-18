@@ -1,54 +1,101 @@
-import jquery from 'jquery';
 import underscore from 'underscore';
 import EventEmitter from 'event-emitter';
-import Const from 'const';
-import SessionDataModel from 'session-data';
-import ManifestoDataModel from 'manifesto-data';
+import { Event, VIEW_TYPE, State } from 'const';
+import ToolboxObjects from './toolboxobjects';
+// import SessionDataModel from 'session-data';
+import Session from './session';
+import { default as CoordsModel, pegmanCoords, mapCoords } from './coords';
 import Main from 'module/main/main';
 import Plant from 'module/plant/plant';
 import Toolbox from 'module/toolbox/toolbox';
 import Map from 'module/map/map';
 import LayersManager from 'module/layers-manager/layers-manager';
+import { fetch } from 'global/window';
+import { extend } from 'underscore';
 
 export default class extends EventEmitter {
-  constructor(options) {
-    const initDefer = jquery.Deferred();  // eslint-disable-line new-cap
-
+  constructor({viewType, plantUrl, manifestoUrl, ...options}) {
     super(options);
+
+    const context = {
+      app: this,
+    };
+
     this._state = null;
     this.options = options;
     this.data = {
-      session: new SessionDataModel(null, {
-        app: this,
-      }),
-      manifesto: new ManifestoDataModel(null, {
-        url: options.manifestoUrl,
-        app: this,
-      }),
+      session: new Session(null, context),
+      coords: null,
+      toolboxobjects: null,
     };
-    this.setState(Const.State.INITING);
-    this.manifesto()
-        .fetch()
-        .done(() => {
+
+    if (viewType === VIEW_TYPE.Plant) {
+      this.getPlant(plantUrl)
+        .then(({manifesto, plant}) => {
+          const { toolboxobjects } = manifesto;
+          const coords = extend({}, mapCoords(plant), pegmanCoords(plant));
+
+          this.data.coords = new CoordsModel(coords, context);
+          this.data.toolboxobjects = new ToolboxObjects(toolboxobjects, context);
+        })
+        .then(() => {
           this._initializeViews();
-          initDefer.resolve();
         });
-    this.initDefer = initDefer.promise();
+    } else {
+      this.getManifesto(manifestoUrl)
+        .then((manifesto) => {
+          const { toolboxobjects } = manifesto;
+
+          this.data.coords = new CoordsModel(mapCoords(manifesto), context);
+          this.data.toolboxobjects = new ToolboxObjects(toolboxobjects, context);
+        })
+        .then(() => {
+          this._initializeViews();
+        });
+    }
+  }
+
+  static get Viewer() {
+    return VIEW_TYPE;
+  }
+
+  getPlant(plantUrl) {
+    return new Promise((resolve, reject) => {
+      fetch(plantUrl)
+        .then(response => response.json())
+        .then(({manifesto: manifestoUrl, ...plant}) => {
+          this.getManifesto(manifestoUrl)
+            .then((manifesto) => {
+              resolve({ manifesto, plant });
+            })
+            .catch(reject);
+        })
+        .catch(reject);
+    });
+  }
+
+  getManifesto(manifestoUrl) {
+    return fetch(manifestoUrl)
+      .then(response => response.json());
   }
 
   session() {
     return this.data.session;
   }
 
-  manifesto() {
-    return this.data.manifesto;
+  coords() {
+    return this.data.coords;
+  }
+
+  toolboxobjects() {
+    return this.data.toolboxobjects;
   }
 
   setState(state) {
     const prevState = this._state;
 
     this._state = state;
-    this.trigger(Const.Event.STATE_CHANGED, this._state, prevState);
+    this.trigger(Event.STATE_CHANGED, this._state, prevState);
 
     return this;
   }
@@ -60,28 +107,26 @@ export default class extends EventEmitter {
   _initializeViews() {
     this.main = new Main.View.Main({
       el: this.options.container,
-      manifesto: this.manifesto().toJSON(),
       app: this,
     });
-    this.overlay = new Plant.View.Overlay({
-      el: this.main.el.querySelector('.plantingjs-overlay'),
-      collection: this.session().objects(),
-      app: this,
-    });
-    this.toolbox = new Toolbox.View.Sidebar({
-      el: this.main.el.querySelector('.plantingjs-toolbox'),
-      app: this,
-    });
+    // this.overlay = new Plant.View.Overlay({
+    //   el: this.main.el.querySelector('.plantingjs-overlay'),
+    //   collection: this.session().objects(),
+    //   app: this,
+    // });
+    // this.toolbox = new Toolbox.View.Sidebar({
+    //   el: this.main.el.querySelector('.plantingjs-toolbox'),
+    //   app: this,
+    // });
     this.map = new Map.View({
       el: this.main.el.querySelector('.plantingjs-google'),
-      model: this.manifesto(),
       app: this,
     });
-    this.layersManager = new LayersManager.View.Menu({
-      $parent: this.main.$proxy,
-      collection: this.session().objects(),
-      app: this,
-    });
+    // this.layersManager = new LayersManager.View.Menu({
+    //   $parent: this.main.$proxy,
+    //   collection: this.session().objects(),
+    //   app: this,
+    // });
   }
 
   initPlant(objects) {
@@ -112,7 +157,7 @@ export default class extends EventEmitter {
 
     this.initDefer
       .then(() => {
-        this.setState(Const.State.VIEWER);
+        this.setState(State.VIEWER);
         this.map.initializeViewer(panoOptions);
 
         if (objects &&

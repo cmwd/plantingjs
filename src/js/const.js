@@ -1,4 +1,4 @@
-module.exports.Event = {
+export const Event = {
   VISIBLE_CHANGED: 'visible_changed',
   START_PLANTING: 'start_planting',
   SAVE_REQUEST: 'save_request',
@@ -6,9 +6,14 @@ module.exports.Event = {
   STATE_CHANGED: 'state_changed',
 };
 
-module.exports.State = {
+export const State = {
   INITING: 'initing',
   MAP: 'map',
   PLANTING: 'planting',
   VIEWER: 'viewer',
+};
+
+export const VIEW_TYPE = {
+  Plant: 'plant',
+  Planner: 'planner',
 };

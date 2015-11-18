@@ -10,6 +10,18 @@ const coreMembers = {
   manifesto() {
     return this.app.data.manifesto;
   },
+
+  coords() {
+    return this.app.data.coords;
+  },
+
+  context() {
+    return this.app;
+  },
+
+  options() {
+    return this.app.options;
+  },
 };
 
 function _setContext(options) {

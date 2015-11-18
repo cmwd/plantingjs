@@ -41,6 +41,8 @@
             window.onload = function () {
                 PlantingInstance = new window.Planting( {
                     container:document.querySelector('.viewport'),
+                    plantUrl: 'forview.json',
+                    viewType: Planting.Viewer.Plant,
                     manifestoUrl: '/manifesto.json',
                     googleApiKey: 'AIzaSyD9fmhpMCKGM6BCMtsnn05GfxEK77jRHjc',
                     onSave: simple_save_callback
