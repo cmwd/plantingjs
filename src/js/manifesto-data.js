@@ -1,5 +1,6 @@
 import { Model } from 'core';
 import Const from 'const';
+import { range } from 'underscore';
 
 export default Model.extend({
   constructor(data, options) {
@@ -14,7 +15,19 @@ export default Model.extend({
   },
 
   getProjectionsFor(objectId) {
-    const toolboxobjects = this.get('toolboxobjects')[objectId];
-    return toolboxobjects.projections;
+    const toolboxObjects = this.get('toolboxobjects')[objectId];
+    return toolboxObjects.projections;
+  },
+
+  getToolboxObjects() {
+    const toolboxObjects = this.get('toolboxobjects');
+    /**
+     * Use range to generate temporary object id.
+     *
+     * @todo
+     * manifesto should provide object id.
+     */
+    const toolboxObjectsRange = range(toolboxObjects.length);
+    return toolboxObjects.map(({ projections }, index) => ({ projections, objectId: toolboxObjectsRange[index] }));
   },
 });

@@ -87,14 +87,16 @@ const PlantViewOverlay = View.extend({
 
   plantObject: function(ev, ui) {
     const model = ui.draggable.data('model');
-    const newModel = underscore.extend(model, {
-      x: ui.position.left / this.width(),
-      y: ui.position.top / (this.height() * 2) / this.width(),
-    });
+    const objectId = ui.draggable.data('objectId');
+    console.log(objectId);
+    // const newModel = underscore.extend(model, {
+    //   x: ui.position.left / this.width(),
+    //   y: ui.position.top / (this.height() * 2) / this.width(),
+    // });
 
-    this.collection.add(newModel, {
-      app: this.app,
-    });
+    // this.collection.add(newModel, {
+    //   app: this.app,
+    // });
   },
 
   width: function() {

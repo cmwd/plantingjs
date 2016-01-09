@@ -1,6 +1,5 @@
-import { View } from '../../core';
 import Template from './button.hbs';
-import { Model } from 'backbone';
+import { Model, View } from 'backbone';
 
 export default View.extend({
   tagName: 'a',

@@ -1,8 +1,5 @@
-import { chain, range, map } from 'underscore';
 import jquery from 'jquery';
-import { View, Collection } from 'core';
-// import ToolboxObject from './sidebar-object';
-import ToolboxModel from '../plant/model';
+import { View, Collection } from 'backbone';
 import template from './sidebar.hbs';
 import { Event } from 'const';
 
@@ -18,37 +15,22 @@ export default View.extend({
   },
   userActivityTimeout: null,
   mouseOver: false,
+  constructor({ app, ...opts }) {
+    this.app = app;
+    View.call(this, opts);
+  },
 
   initialize() {
-    const objectsIds = range(this.manifesto().getCopy('toolboxobjects').length);
-    const objectsProjs = map(this.manifesto().getCopy('toolboxobjects'), ({ projections }) => projections);
-    const objectsData = chain(objectsIds)
-      .zip(objectsProjs)
-      .map(([ objectId, projections ]) => ({ objectId, projections, currentProjection: 0 }))
-      .value();
-
-    this.collection = new Collection(objectsData, {
-      model: ToolboxModel,
-      app: this.app,
-    });
     this.render();
     this.app.on(Event.START_PLANTING, () => {
-      this.renewUserActivity(ACTIVITY_TIMEOUT_VALUE * 2);
+      this.renewUserActivity(ACTIVITY_TIMEOUT_VALUE * 3);
     });
   },
 
   render() {
-    let objects = this.collection.map((model) => {
-      const {
-        projections: [image],
-        objectId,
-      } = model.attributes;
-      const cid = model.cid;
+    const objects = this.collection
+      .toJSONMultiply(5);
 
-      return { image, objectId, cid };
-    });
-
-    objects = objects.concat(objects, objects, objects);
     this.$el.html(template({ objects }));
     this.makeObjectsDraggable();
   },
@@ -67,10 +49,13 @@ export default View.extend({
 
   onDragStart(el) {
     const $el = jquery(el.currentTarget);
-    const cid = $el.data('cid');
-    const model = this.collection.get(cid).clone();
+    const object = this.collection
+      .getToolboxObjects()
+      .find(({ objectId }) => objectId === $el.data('objectId'));
+    console.log(object);
+    // const model = this.collection.get(cid).clone();
 
-    $el.data('model', model.toJSON());
+    // $el.data('model', model.toJSON());
   },
 
   onMouseEnter() {
@@ -84,17 +69,15 @@ export default View.extend({
   },
 
   renewUserActivity(timeout = ACTIVITY_TIMEOUT_VALUE) {
-    this.$el
-      .toggleClass(USER_ACTIVE_CLASS, true);
+    this.$el.toggleClass(USER_ACTIVE_CLASS, true);
     clearTimeout(this.userActivityTimeout);
     this.userActivityTimeout = setTimeout(() => {
       if (this.mouseOver) {
-        this.renewUserActivity();
+        this.renewUserActivity(timeout);
         return;
       }
 
-      this.$el
-        .toggleClass(USER_ACTIVE_CLASS, false);
+      this.$el.toggleClass(USER_ACTIVE_CLASS, false);
     }, timeout);
   },
 });

@@ -1,7 +1,10 @@
-import { View } from 'core';
+import { View, compose } from 'core';
 import MainViewDialog from 'module/main/dialog';
 import Const from 'const';
 import Button from '../component/button';
+import Sidebar from '../toolbox/sidebar';
+import objectsCollection from './objects-collection';
+import { Collection } from 'backbone';
 
 const IS_PLANTING_CLASS = 'is-planting';
 
@@ -16,7 +19,10 @@ const MainViewMain = View.extend({
 
   $proxy: null,
 
-  initialize: function() {
+  initialize: function({ manifesto }) {
+    const ObjectsCollection = compose(Collection, [objectsCollection], this.app);
+
+    this.collection = new ObjectsCollection(manifesto.toolboxobjects);
     this.render();
     this.submit = new Button({
       defaults: {
@@ -24,7 +30,6 @@ const MainViewMain = View.extend({
         label: 'zrobione!',
         visible: false,
       },
-      app: this.app,
     });
     this.submit.delegateEvents({
       click: this.onClickSubmit,
@@ -34,6 +39,11 @@ const MainViewMain = View.extend({
     this.dialog = new MainViewDialog({
       el: this.el.querySelector('.plantingjs-dialog'),
       app: this.app,
+    });
+    this.toolbox = new Sidebar({
+      app: this.app,
+      el: this.el.querySelector('.plantingjs-toolbox'),
+      collection: this.collection,
     });
     this.app
       .on(Const.Event.VISIBLE_CHANGED, function(visible) {

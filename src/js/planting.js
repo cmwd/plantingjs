@@ -6,7 +6,6 @@ import SessionDataModel from 'session-data';
 import ManifestoDataModel from 'manifesto-data';
 import Main from 'module/main/main';
 import Plant from 'module/plant/plant';
-import Sidebar from './module/toolbox/sidebar';
 import Map from 'module/map/map';
 import LayersManager from 'module/layers-manager/layers-manager';
 
@@ -66,10 +65,6 @@ export default class extends EventEmitter {
     this.overlay = new Plant.View.Overlay({
       el: this.main.el.querySelector('.plantingjs-overlay'),
       collection: this.session().objects(),
-      app: this,
-    });
-    this.toolbox = new Sidebar({
-      el: this.main.el.querySelector('.plantingjs-toolbox'),
       app: this,
     });
     this.map = new Map.View({

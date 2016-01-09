@@ -1,5 +1,11 @@
 import Backbone from 'backbone';
-import underscore from 'underscore';
+import underscore, { assign } from 'underscore';
+
+export function compose(baseClass, factories, instance) {
+  const components = factories.map(factory => factory.call(null, baseClass, instance));
+
+  return baseClass.extend(assign({}, ...components));
+}
 
 const coreMembers = {
   app: null,
@@ -32,12 +38,6 @@ export const Model = Backbone.Model.extend(
       constructor(modelAttrs, options) {
         _setContext.call(this, options);
         Backbone.Model.call(this, modelAttrs, options);
-      },
-
-      getCopy() {
-        const data = Backbone.Model.prototype.get.apply(this, arguments);
-
-        return underscore.map(data, underscore.clone);
       },
     }, coreMembers)
 );
