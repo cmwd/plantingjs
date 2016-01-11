@@ -1,4 +1,4 @@
-import underscore from 'underscore';
+import { isNull } from 'underscore';
 import { View } from 'core';
 import PlantViewTools from 'module/plant/tools';
 import Const from 'const';
@@ -16,23 +16,21 @@ const PlantViewObject = View.extend({
 
   $img: null,
 
-  initialize: function(options) {
+  initialize(options) {
     this.overlay = options.overlay;
     this.render();
     this.$img
-        .one('load', function() {
-          if (underscore.isNull(this.model.get('scale'))) {
+        .one('load', () => {
+          if (isNull(this.model.get('scale'))) {
             this.model.set('scale', this.$img.width() / this.overlay.width());
           }
           this.resize();
-        }.bind(this));
-
+        });
     this.tools = new PlantViewTools({
       el: this.el.querySelector('.plantingjs-plantedobject-tools'),
       model: this.model,
       parent: this,
     });
-
     this.$el.draggable({
       cancel: '.icon-loop, .icon-trash, .icon-resize',
     });
@@ -41,7 +39,7 @@ const PlantViewObject = View.extend({
       .on('change:layerIndex', this.setLayer, this);
   },
 
-  render: function() {
+  render() {
     this.$el
       .html(this.template({
         projectionUrl: this.model.getProjection(),
@@ -52,44 +50,42 @@ const PlantViewObject = View.extend({
         top: this.overlay.height() / 2 + this.model.get('y') * this.overlay.width(),
         zIndex: this.model.get('layerIndex'),
       });
-
     this.$img = this.$el.children('img');
 
     return this;
   },
 
-  setLayer: function(model) {
+  setLayer(model) {
     this.$el.css('zIndex', model.get('layerIndex'));
   },
 
-  resize: function() {
+  resize() {
     this.$img.height(this.overlay.width() * this.model.get('scale'));
     this.$img.width(this.overlay.width() * this.model.get('scale'));
     return this;
   },
 
-  updateProjection: function(model) {
+  updateProjection(model) {
     this.$img.attr('src', model.getProjection());
   },
 
-  saveCoords: function(ev, ui) {
+  saveCoords(ev, ui) {
     this.model.set({
       x: ui.position.left,
       y: ui.position.top,
     });
-
     return this;
   },
 
-  setUserActivity: function() {
+  setUserActivity() {
     this.model.set('userActivity', true);
   },
 
-  unsetUserActivity: function() {
+  unsetUserActivity() {
     this.model.set('userActivity', false);
   },
 
-  dragstart: function(ev) {
+  dragstart(ev) {
     if (this.app.getState() === Const.State.VIEWER) {
       ev.preventDefault();
     }
