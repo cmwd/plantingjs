@@ -3,15 +3,22 @@ import jquery from 'jquery';
 import { Collection, View } from '../../core';
 import ToolboxModel from '../plant/model';
 import template from './sidebar.hbs';
+import PlantView from '../plant/plant-view.js';
 import { Event } from '../../const';
 
 const USER_ACTIVE_CLASS = 'plantingjs-is-user-active';
 const ACTIVITY_TIMEOUT_VALUE = 1500;
 
+function renderChild($parent, model) {
+  const plantView = new PlantView({ model });
+
+  return $parent.append(plantView.render().el);
+}
+
 export default View.extend({
   className: 'plantingjs-toolbox',
   events: {
-    'dragstart .plantingjs-js-draggable-object': 'onDragStart',
+    // 'dragstart .plantingjs-js-draggable-object': 'onDragStart',
     'mouseenter': 'onMouseEnter',
     'mouseleave': 'onMouseLeave',
   },
@@ -40,18 +47,24 @@ export default View.extend({
   },
 
   render() {
-    const objects = this.collection.map((model) => {
-      const {
-        projections: [image],
-        objectId,
-      } = model.attributes;
-      const cid = model.cid;
+    let itemsParent;
 
-      return { image, objectId, cid };
-    });
+    this.$el.html(template());
+    itemsParent = this.$el.find('.plantingjs-toolbox-list');
+    this.collection
+        .forEach(renderChild.bind(null, itemsParent));
+    // const objects = this.collection.map((model) => {
+    //   const {
+    //     projections: [image],
+    //     objectId,
+    //   } = model.attributes;
+    //   const cid = model.cid;
 
-    this.$el.html(template({ objects }));
-    this.makeObjectsDraggable();
+    //   return { image, objectId, cid };
+    // });
+
+    // this.$el.html(template({ objects }));
+    // this.makeObjectsDraggable();
   },
 
   makeObjectsDraggable() {
