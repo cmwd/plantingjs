@@ -13,7 +13,8 @@ body {
     left: 0px;
 }
 
-.noselect {
+.noselect,
+[draggable] {
     /* Prevent text selection */
     -webkit-user-select: none;
     -khtml-user-select: none;

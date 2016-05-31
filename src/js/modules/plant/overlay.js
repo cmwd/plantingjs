@@ -6,7 +6,9 @@ import Const from '../../const';
 
 export default View.extend({
   events: {
-    'drop': 'plantObject',
+    'drop': 'onDrop',
+    'dragenter': 'onDragenter',
+    'dragover': 'onDragover',
   },
   _width: null,
   _height: null,
@@ -18,9 +20,9 @@ export default View.extend({
       .on('reset', function(collection) {
         collection.each(this.addObject, this);
       }, this);
-    this.$el.droppable({
-      accept: '.plantingjs-js-draggable-object',
-    });
+    // this.$el.droppable({
+    //   accept: '.plantingjs-js-draggable-object',
+    // });
     this.app
       .on(Const.Event.START_PLANTING, this._init, this)
       .on(Const.Event.STATE_CHANGED, function(state) {
@@ -85,16 +87,25 @@ export default View.extend({
     this._height = newH;
   },
 
-  plantObject: function(ev, ui) {
-    const model = ui.draggable.data('model');
-    const newModel = lodash.extend(model, {
-      x: ui.position.left / this.width(),
-      y: (ui.position.top - (this.height() / 2)) / this.width(),
-    });
+  onDrop: function(ev, ui) {
+    console.log(arguments);
+    // const model = ui.draggable.data('model');
+    // const newModel = lodash.extend(model, {
+    //   x: ui.position.left / this.width(),
+    //   y: (ui.position.top - (this.height() / 2)) / this.width(),
+    // });
 
-    this.collection.add(newModel, {
-      app: this.app,
-    });
+    // this.collection.add(newModel, {
+    //   app: this.app,
+    // });
+  },
+
+  onDragenter() {
+    console.log(arguments);
+  },
+
+  onDragover() {
+    console.log(arguments);
   },
 
   width: function() {
