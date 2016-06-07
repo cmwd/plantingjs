@@ -3,26 +3,20 @@ import jquery from 'jquery';
 import { View } from '../../core';
 import PlantViewObject from './object';
 import Const from '../../const';
+import dropable, { EVENT_DROP } from '../components/dropable';
 
 export default View.extend({
-  events: {
-    'drop': 'onDrop',
-    'dragenter': 'onDragenter',
-    'dragover': 'onDragover',
-  },
   _width: null,
   _height: null,
 
   initialize: function() {
+    dropable({ view: this });
     this.objects = [];
     this.collection
       .on('add', this.addObject, this)
       .on('reset', function(collection) {
         collection.each(this.addObject, this);
       }, this);
-    // this.$el.droppable({
-    //   accept: '.plantingjs-js-draggable-object',
-    // });
     this.app
       .on(Const.Event.START_PLANTING, this._init, this)
       .on(Const.Event.STATE_CHANGED, function(state) {
@@ -30,6 +24,7 @@ export default View.extend({
           this._init();
         }
       }, this);
+    this.on(EVENT_DROP, this.addObject, this);
   },
 
   _init: function() {
@@ -39,7 +34,17 @@ export default View.extend({
     jquery(window).on('resize', this.resizeHandler.bind(this));
   },
 
-  addObject: function(model) {
+  addObject: function({ data, x, y }) {
+    const { toolbox: { collection }} = this.app;
+    const { modelCid, offset } = data;
+    const model = collection.get(modelCid).clone();
+    const width = this.width();
+    const height = this.height();
+
+    model
+      .setPosX({ x: (x - offset.x), width })
+      .setPosY({ y: (y - offset.y), width, height });
+
     const newObject = new PlantViewObject({
       model: model,
       app: this.app,
@@ -85,27 +90,6 @@ export default View.extend({
     });
     this._width = newW;
     this._height = newH;
-  },
-
-  onDrop: function(ev, ui) {
-    console.log(arguments);
-    // const model = ui.draggable.data('model');
-    // const newModel = lodash.extend(model, {
-    //   x: ui.position.left / this.width(),
-    //   y: (ui.position.top - (this.height() / 2)) / this.width(),
-    // });
-
-    // this.collection.add(newModel, {
-    //   app: this.app,
-    // });
-  },
-
-  onDragenter() {
-    console.log(arguments);
-  },
-
-  onDragover() {
-    console.log(arguments);
   },
 
   width: function() {

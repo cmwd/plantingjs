@@ -4,6 +4,16 @@ import PlantViewTools from '../plant/tools';
 import Const from '../../const';
 import moveableComponent, { MOVE_END } from '../components/moveable';
 
+function saveCoords({ view, coords }) {
+  const { x, y } = coords;
+  const width = view.overlay.width();
+  const height = view.overlay.height();
+
+  view.model
+    .setPosX({ x, width })
+    .setPosY({ y, width, height });
+}
+
 const ObjectView = View.extend({
   className: 'plantingjs-plantedobject-container',
   template: require('./object.hbs'),
@@ -38,13 +48,15 @@ const ObjectView = View.extend({
 
     if (this.app.getState() !== Const.State.VIEWER) {
       moveableComponent({ view: this });
-      this.on(MOVE_END, this.model.set, this.model);
+      this.on(MOVE_END, coords => saveCoords({ view: this, coords }));
     }
   },
 
   render: function() {
-    const x = this.overlay.width() * this.model.get('x');
-    const y = this.overlay.height() / 2 + this.model.get('y') * this.overlay.width();
+    const width = this.overlay.width();
+    const height = this.overlay.height();
+    const x = this.model.getPosX({ width });
+    const y = this.model.getPosY({ width, height });
 
     this.$el
       .html(this.template({

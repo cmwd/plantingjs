@@ -30,7 +30,7 @@ export default View.extend({
   },
 
   removeObject: function removeObject() {
-    this.model.collection.remove(this.model);
+    this.parentView.remove();
   },
 
   resizeObject: function resizeObject() {

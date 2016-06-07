@@ -1,4 +1,3 @@
-import 'jquery-ui';
 import lodash from 'lodash';
 import EventEmitter from './event-emitter';
 import Const from './const';
